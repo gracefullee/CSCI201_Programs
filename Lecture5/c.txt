@@ -1,0 +1,22 @@
+C++: ifstream, ofstream
+C: functions such as printf and scanf
+
+If you need to use Scanner class in another function other than main,
+	Either close the first Scanner variable
+	OR pass it in as a variable in your new function
+	
+Exception Handling
+	Use Conditional Statements if possible! (Faster runtime than Exception Handling)
+	Checked exception
+		Code will not compile unless you handle the exception
+	Unchecked exception
+	Errors We Can't Handle
+		NoClassDefFoundError: Class existed when compiled (which created .class file), probably deleted between compiling and running, but is missing at runtime
+		OutOfMemoryError: Computer is out of memory; is going to crash
+	Exceptions that Can be Handled
+Catch ALL - catch (Exception e) { } - BUT ONLY PRINTS "EXCEPTION OCCURRED" does not inform you about what type of exception occurred
+Finally { } - executes whether there was an exception or not (as long as it's handled)
+
+PrintWriter overwrites over existing files with same name by default
+PrintWriter.flush() - writes back to the hard drive
+
