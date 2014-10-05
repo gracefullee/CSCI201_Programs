@@ -175,7 +175,11 @@ public class eventManagerPanel extends JPanel{
 			});
 			for(int i=1; i<=currentDate.getActualMaximum(Calendar.DATE); i++)
 				day.addItem(i);
-			day.setSelectedItem(currentDate.get(Calendar.DATE));
+			if(month.getSelectedIndex()==currentDate.get(Calendar.MONTH) &&(int)year.getSelectedItem()==currentDate.get(Calendar.YEAR))
+				day.setSelectedItem(currentDate.get(Calendar.DATE));
+			else{
+				day.setSelectedIndex(0);
+			}
 			gbc.gridx=1;
 			gbc.gridy=2;
 			datePanel.add(year,gbc);
@@ -197,7 +201,7 @@ public class eventManagerPanel extends JPanel{
 					result = true;
 					Event createdEvent = createEvent();
 					if(result){
-						uCal.addEvent(createdEvent, createdEvent.getEventDate());
+						uCal.addEvent(createdEvent, currentDate);
 						CardLayout c1 = (CardLayout)outerPanel.getLayout();
 						c1.show(outerPanel,"calendar");
 					}
@@ -224,7 +228,7 @@ public class eventManagerPanel extends JPanel{
 		add(createCancelPanel,gbc1);
 	}
 	
-	private void clearContent()
+	public void clearContent()
 	{
 		currentDate = Calendar.getInstance();
 		titleTF.setText("");
@@ -252,7 +256,6 @@ public class eventManagerPanel extends JPanel{
 	
 	private Event createEvent()
 	{
-		clearContent();
 		String checkTitle = titleTF.getText().replaceAll(" ", "");
 		String checkLocation = locationTF.getText().replaceAll(" ", "");
 		if(checkTitle.equals("") || checkLocation.equals("")){
@@ -266,7 +269,7 @@ public class eventManagerPanel extends JPanel{
 		}
 		else{
 			Calendar selectedDate = Calendar.getInstance();
-			selectedDate.set((int)year.getSelectedItem(),month.getSelectedIndex(),(int)day.getSelectedItem(),(int)startHour.getSelectedItem(),(int)startMin.getSelectedItem());
+			selectedDate.set((int)year.getSelectedItem(),month.getSelectedIndex(),(int)day.getSelectedItem(),(int)startHour.getSelectedItem(),((int)startMin.getSelectedIndex()*15));
 			Calendar newStart = Calendar.getInstance();
 			Calendar newEnd = Calendar.getInstance();
 			newStart.set(Calendar.YEAR, (int)year.getSelectedItem());
@@ -316,7 +319,7 @@ public class eventManagerPanel extends JPanel{
 			else{
 				eMin = Integer.toString(newEnd.get(Calendar.MINUTE));
 			}
-			Event newEvent = new Event(titleTF.getText(),locationTF.getText(),currentDate,newStart,newEnd);
+			Event newEvent = new Event(titleTF.getText(),locationTF.getText(),selectedDate,newStart,newEnd);
 			String newListString = new String(newEvent.getEventTitle() + " - " + newEvent.getEventLocation() + " From " + newStart.get(Calendar.HOUR)
 					+ ":" + sMin + newStart.getDisplayName(Calendar.AM_PM,Calendar.SHORT,Locale.getDefault())
 					+ " - " + newEnd.get(Calendar.HOUR) + ":" + eMin + newEnd.getDisplayName(Calendar.AM_PM,Calendar.SHORT,Locale.getDefault()) );
@@ -324,5 +327,10 @@ public class eventManagerPanel extends JPanel{
 			return newEvent;
 		}
 		
+	}
+	
+	public void setCurrentDate(Calendar newDate)
+	{
+		this.currentDate = newDate;
 	}
 }

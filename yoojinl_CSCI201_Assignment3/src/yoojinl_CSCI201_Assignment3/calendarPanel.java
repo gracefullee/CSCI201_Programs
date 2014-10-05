@@ -9,6 +9,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -30,7 +31,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 
@@ -56,7 +56,7 @@ public class calendarPanel extends JPanel{
 	private JList<String> events = new JList<String>(eventsModel);
 	private ArrayList<Event> monthEventList;
 	
-	public calendarPanel(JPanel outerPanel, createEventPanel cePanel, editDeleteEventPanel ePanel, userCalendar uCal)
+	public calendarPanel(JPanel outerPanel, createEventPanel cePanel, editDeleteEventPanel ePanel, eventManagerPanel emPanel, userCalendar uCal)
 	{
 		this.uCal = uCal;
 		this.cePanel = cePanel;
@@ -82,6 +82,8 @@ public class calendarPanel extends JPanel{
 			eventManagerButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae)
 				{
+					emPanel.clearContent();
+					emPanel.setCurrentDate(selectedDate);
 					CardLayout c1 = (CardLayout)outerPanel.getLayout();
 					c1.show(outerPanel, "event manager");
 				}
@@ -90,73 +92,7 @@ public class calendarPanel extends JPanel{
 			exportButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae)
 				{
-					
-					try {
-						try{
-							FileWriter fw = new FileWriter("CalendarEvents.csv");
-							ArrayList<ArrayList<ArrayList<Event>>> eventList =calendarPanel.this.uCal.getEventList();
-							
-							fw.append("YEAR,MONTH,DAY,DAY OF WEEK,START TIME,END TIME,TITLE,LOCATION\n");
-							
-							for(int i=0; i<200; i++)
-							{
-								for(int j=0; j<12; j++)
-								{
-									ArrayList<Event> monthList = eventList.get(i).get(j);
-									for(int k=0; k<monthList.size(); k++)
-									{
-										Event e = monthList.get(k);
-										String [] data = new String [8];
-										data[0] = Integer.toString(e.getEventDate().get(Calendar.YEAR));
-										data[1] = e.getEventDate().getDisplayName(Calendar.MONTH,Calendar.LONG, Locale.getDefault());
-										data[2] = Integer.toString(e.getEventDate().get(Calendar.DATE));
-										data[3] = e.getEventDate().getDisplayName(Calendar.DAY_OF_WEEK,Calendar.LONG, Locale.getDefault());
-										
-										String sMin, eMin;
-										if(e.getStartTime().get(Calendar.MINUTE)==0)
-											sMin = "00";
-										else{
-											sMin = Integer.toString(e.getStartTime().get(Calendar.MINUTE));
-										}
-										if(e.getEndTime().get(Calendar.MINUTE)==0)
-											eMin = "00";
-										else{
-											eMin = Integer.toString(e.getEndTime().get(Calendar.MINUTE));
-										}
-										
-										String s = new String(e.getStartTime().get(Calendar.HOUR)
-												+ ":" + sMin + e.getStartTime().getDisplayName(Calendar.AM_PM,Calendar.SHORT,Locale.getDefault()));
-										String end = new String(e.getEndTime().get(Calendar.HOUR)
-												+ ":" + eMin + e.getEndTime().getDisplayName(Calendar.AM_PM,Calendar.SHORT,Locale.getDefault()));
-										
-										data[4] = s;
-										data[5] = end;
-										data[6] = e.getEventTitle();
-										data[7] = e.getEventLocation();
-										for(int l=0; l<8; l++)
-										{
-											fw.append(data[l]);
-											if(l!=7)
-												fw.append(',');
-										}
-										fw.append('\n');
-									}
-								}
-							}
-						
-							fw.flush();
-							fw.close();
-							
-						}	catch (FileNotFoundException e) {
-							JOptionPane.showMessageDialog(calendarPanel.this, 
-									"Please close the 'CalendarEvenets.csv'", 
-									"ERROR", 
-									JOptionPane.ERROR_MESSAGE);
-						}	
-					} catch (IOException e) {
-						System.out.println("IOException occured: " + e.getMessage());
-						e.printStackTrace();
-					} 
+					exportEvents(); 
 					JOptionPane.showMessageDialog(calendarPanel.this, 
 							"Events have been exported to 'CalendarEvents.cvs'", 
 							"Export", 
@@ -167,48 +103,7 @@ public class calendarPanel extends JPanel{
 			aboutButton.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae)
 				{
-					JDialog aboutDialog = new JDialog();
-					aboutDialog.setTitle("About");
-					aboutDialog.setLayout(new BorderLayout());
-					aboutDialog.setLocationRelativeTo(calendarPanel.this);
-					aboutDialog.setSize(400,400);
-					aboutDialog.setModal(true);
-					JPanel aboutPanel = new JPanel();
-					aboutPanel.setLayout(new GridBagLayout());
-					GridBagConstraints gbc = new GridBagConstraints();
-					ImageIcon initial = new ImageIcon("banner.png");
-					Image img = initial.getImage();
-					Image newImg = img.getScaledInstance(aboutDialog.getWidth(),50,Image.SCALE_SMOOTH);
-					ImageIcon banner = new ImageIcon(newImg);
-					JLabel topImage = new JLabel(banner);
-					aboutDialog.add(topImage,BorderLayout.NORTH);
-					JLabel name = new JLabel("Yoo Jin (Grace) Lee");
-					name.setFont(new Font("Segoe UI", Font.BOLD, 30));
-					gbc.gridx=0;
-					gbc.gridy=0;
-					aboutPanel.add(name,gbc);
-					JPanel description = new JPanel();
-					description.setLayout(new BorderLayout());
-						initial = new ImageIcon("picture.jpg");
-						img = initial.getImage();
-						newImg = img.getScaledInstance(150,266,Image.SCALE_SMOOTH);
-						ImageIcon p = new ImageIcon(newImg);
-						JLabel picture = new JLabel(p);
-						description.add(picture,BorderLayout.WEST);
-						JTextPane info = new JTextPane();
-						info.setText("Section\nProfessor Miller\nT/TH "
-								+ "8:00AM-9:20AM\n\nProgram Completed On\n"
-								+ "October 3, 2014\n");
-						info.setAlignmentX(JTextPane.CENTER_ALIGNMENT);
-						info.setAlignmentY(JTextPane.CENTER_ALIGNMENT);
-						description.add(info,BorderLayout.EAST);
-					gbc.gridx=0;
-					gbc.gridy=1;
-					aboutPanel.add(description,gbc);
-					aboutPanel.setBackground(Color.WHITE);
-					aboutDialog.add(aboutPanel);
-					aboutDialog.setVisible(true);
-					
+					displayAbout();					
 				}
 			});
 			menuBar.add(eventManagerButton);
@@ -305,6 +200,7 @@ public class calendarPanel extends JPanel{
 					int index = theList.locationToIndex(mouseEvent.getPoint());
 					if (index >= 0) {
 						String lString = theList.getModel().getElementAt(index);
+						monthEventList = uCal.getEventList().get(currentDate.get(Calendar.YEAR)-1900).get(currentDate.get(Calendar.MONTH));
 						for(int i=0; i<monthEventList.size();i++)
 						{
 							if(monthEventList.get(i).getListString()==lString){
@@ -317,14 +213,30 @@ public class calendarPanel extends JPanel{
 								{
 									//Delete Clicked Event
 									Calendar sDate = monthEventList.get(i).getEventDate();
-									monthEventList.remove(i);
+									uCal.removeEvent(monthEventList.get(i));
+									int count = 0;
+									int newSize = monthEventList.size();
+									for(int j=0; j<newSize; j++){
+										if(monthEventList.get(j).getEventDate().get(Calendar.YEAR)==selectedDate.get(Calendar.YEAR))
+										{
+											if(monthEventList.get(j).getEventDate().get(Calendar.MONTH)==selectedDate.get(Calendar.MONTH))
+											{
+												if(monthEventList.get(j).getEventDate().get(Calendar.DATE)==selectedDate.get(Calendar.DATE))
+													count++;
+											}		
+										}
+									}
+									if(buttonSelected!=null && count==0){
+										buttonSelected.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+									}
 									displayEvents(sDate);
+									drawDays();
 								}
 								else if(selection==1)
 								{	//Edit Clicked Event
-										ePanel.setEvent(monthEventList.get(i));
-										CardLayout c1 = (CardLayout)outerPanel.getLayout();
-										c1.show(outerPanel,"edit");
+									ePanel.setEvent(monthEventList.get(i));
+									CardLayout c1 = (CardLayout)outerPanel.getLayout();
+									c1.show(outerPanel,"edit");
 								}
 							}
 						}
@@ -355,14 +267,12 @@ public class calendarPanel extends JPanel{
 		prevMonth.roll(Calendar.MONTH, false);
 		nextMonth.roll(Calendar.MONTH, false);
 		drawDays();
-		updateDays();
 		monthTitle.setText("" + currentDate.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()));
 		yearTitle.setText("" + currentDate.get(Calendar.YEAR));
 	}
 	
 	public void nextMonth()
 	{
-		updateDays();
 		if(nextMonth.get(Calendar.MONTH)==Calendar.DECEMBER)
 			nextMonth.roll(Calendar.YEAR,true);
 		if(currentDate.get(Calendar.MONTH)==Calendar.DECEMBER)
@@ -373,7 +283,6 @@ public class calendarPanel extends JPanel{
 		prevMonth.roll(Calendar.MONTH, true);
 		nextMonth.roll(Calendar.MONTH, true);
 		drawDays();
-		updateDays();
 		monthTitle.setText("" + currentDate.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()));
 		yearTitle.setText("" + currentDate.get(Calendar.YEAR));
 		
@@ -381,6 +290,7 @@ public class calendarPanel extends JPanel{
 	
 	public void drawDays()
 	{
+
 		this.monthEventList = uCal.getEventList().get(currentDate.get(Calendar.YEAR)-1900).get(currentDate.get(Calendar.MONTH));
 		monthLayoutPanel.removeAll();
 		for(int i=0; i<42; i++)
@@ -409,7 +319,8 @@ public class calendarPanel extends JPanel{
 			int count = 0;
 			JButton day = new JButton("" + (i+1));
 			day.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-			for(int j=0; j<monthEventList.size(); j++)
+			int size = monthEventList.size();
+			for(int j=0; j<size; j++)
 			{	
 				int eDate = monthEventList.get(j).getEventDate().get(Calendar.DATE);
 				if(eDate==(i+1)) 
@@ -424,6 +335,19 @@ public class calendarPanel extends JPanel{
 				day.setBackground(Color.YELLOW);
 				todayButton = day;
 			}
+		
+			if(currentDate.get(Calendar.YEAR)==selectedDate.get(Calendar.YEAR))
+			{
+				if(currentDate.get(Calendar.MONTH)==selectedDate.get(Calendar.MONTH))
+				{
+					if(buttonSelected!=null && Integer.parseInt(buttonSelected.getText())==(i+1))
+					{
+						day.setBackground(Color.CYAN);
+						buttonSelected = day;
+					}
+				}		
+			}
+					
 			day.addActionListener(new ActionListener(){
 				public void actionPerformed(ActionEvent ae)
 				{
@@ -481,7 +405,8 @@ public class calendarPanel extends JPanel{
 		ArrayList<Event> thisMonthEvent = updatedList.get(currYear).get(currMonth);
 		ArrayList<String> eList = new ArrayList<String>();
 		monthEventList = thisMonthEvent;
-		for(int i=0; i<thisMonthEvent.size(); i++)
+		int size = monthEventList.size();
+		for(int i=0; i<size; i++)
 		{	
 			
 			int eventDate = thisMonthEvent.get(i).getEventDate().get(Calendar.DATE);
@@ -511,28 +436,145 @@ public class calendarPanel extends JPanel{
 		return this.dayHolder;
 	}
 	
-	public void updateDays()
-	{
-		ImageIcon initial = new ImageIcon("star.png");
-		this.monthEventList = uCal.getEventList().get(currentDate.get(Calendar.YEAR)-1900).get(currentDate.get(Calendar.MONTH));
-		int firstDayofWeek = currentDate.get(Calendar.DAY_OF_WEEK);
-		for(int i=firstDayofWeek-1; i<(currentDate.getActualMaximum(Calendar.MONTH))+firstDayofWeek-1; i++)
-		{
-			int count = 0;
-			JButton all = null;
-			for(int j=0; j<monthEventList.size(); j++)
-			{
-				all = (JButton) dayHolder[i].getComponent(0);
-				if(monthEventList.get(j).getEventDate().get(Calendar.DATE)==Integer.parseInt(all.getText()))
-					count++;
-			}
-			if(count>0)
-				all.setIcon(initial);
-		}
-	}
 	
 	public Calendar getCurrentDate()
 	{
 		return this.currentDate;
+	}
+	
+	private void exportEvents()
+	{
+		try {
+			try{
+				FileWriter fw = new FileWriter("CalendarEvents.csv");
+				ArrayList<ArrayList<ArrayList<Event>>> eventList =calendarPanel.this.uCal.getEventList();
+				
+				fw.append("YEAR,MONTH,DAY,DAY OF WEEK,START TIME,END TIME,TITLE,LOCATION\n");
+				
+				for(int i=0; i<200; i++)
+				{
+					for(int j=0; j<12; j++)
+					{
+						ArrayList<Event> monthList = eventList.get(i).get(j);
+						for(int k=0; k<monthList.size(); k++)
+						{
+							Event e = monthList.get(k);
+							String [] data = new String [8];
+							data[0] = Integer.toString(e.getEventDate().get(Calendar.YEAR));
+							data[1] = e.getEventDate().getDisplayName(Calendar.MONTH,Calendar.LONG, Locale.getDefault());
+							data[2] = Integer.toString(e.getEventDate().get(Calendar.DATE));
+							data[3] = e.getEventDate().getDisplayName(Calendar.DAY_OF_WEEK,Calendar.LONG, Locale.getDefault());
+							
+							String sMin, eMin;
+							if(e.getStartTime().get(Calendar.MINUTE)==0)
+								sMin = "00";
+							else{
+								sMin = Integer.toString(e.getStartTime().get(Calendar.MINUTE));
+							}
+							if(e.getEndTime().get(Calendar.MINUTE)==0)
+								eMin = "00";
+							else{
+								eMin = Integer.toString(e.getEndTime().get(Calendar.MINUTE));
+							}
+							
+							String s = new String(e.getStartTime().get(Calendar.HOUR)
+									+ ":" + sMin + e.getStartTime().getDisplayName(Calendar.AM_PM,Calendar.SHORT,Locale.getDefault()));
+							String end = new String(e.getEndTime().get(Calendar.HOUR)
+									+ ":" + eMin + e.getEndTime().getDisplayName(Calendar.AM_PM,Calendar.SHORT,Locale.getDefault()));
+							
+							data[4] = s;
+							data[5] = end;
+							data[6] = e.getEventTitle();
+							data[7] = e.getEventLocation();
+							for(int l=0; l<8; l++)
+							{
+								fw.append(data[l]);
+								if(l!=7)
+									fw.append(',');
+							}
+							fw.append('\n');
+						}
+					}
+				}
+			
+				fw.flush();
+				fw.close();
+				
+			}	catch (FileNotFoundException e) {
+				JOptionPane.showMessageDialog(calendarPanel.this, 
+						"Please close the 'CalendarEvenets.csv'", 
+						"ERROR", 
+						JOptionPane.ERROR_MESSAGE);
+			}	
+		} catch (IOException e) {
+			System.out.println("IOException occured: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
+	private void displayAbout()
+	{
+		JDialog aboutDialog = new JDialog();
+		aboutDialog.setTitle("About");
+		aboutDialog.setLayout(new BorderLayout());
+		aboutDialog.setLocationRelativeTo(calendarPanel.this);
+		aboutDialog.setSize(400,400);
+		aboutDialog.setModal(true);
+		JPanel aboutPanel = new JPanel();
+		aboutPanel.setLayout(new GridBagLayout());
+		GridBagConstraints gbc = new GridBagConstraints();
+		ImageIcon initial = new ImageIcon("banner.png");
+		Image img = initial.getImage();
+		Image newImg = img.getScaledInstance(aboutDialog.getWidth(),50,Image.SCALE_SMOOTH);
+		ImageIcon banner = new ImageIcon(newImg);
+		JPanel name = new JPanel();
+		name.setBackground(Color.WHITE);
+		JLabel topImage = new JLabel(banner);
+		aboutDialog.add(topImage,BorderLayout.NORTH);
+		JLabel fname = new JLabel("Yoo Jin");
+		fname.setBackground(Color.WHITE);
+		fname.setFont(new Font("Segoe UI", Font.BOLD, 30));
+		JLabel lname = new JLabel("Lee");
+		lname.setBackground(Color.WHITE);
+		lname.setFont(new Font("Segoe UI", Font.PLAIN, 28));
+		name.add(fname);
+		name.add(lname);
+		gbc.gridx=0;
+		gbc.gridy=0;
+		gbc.insets = new Insets(2,3,2,3);
+		aboutPanel.add(name,gbc);
+		JPanel description = new JPanel();
+			initial = new ImageIcon("picture.jpg");
+			img = initial.getImage();
+			newImg = img.getScaledInstance(150,266,Image.SCALE_SMOOTH);
+			ImageIcon p = new ImageIcon(newImg);
+			JLabel picture = new JLabel(p);
+			description.add(picture);
+			DefaultListModel<String> infoModel = new DefaultListModel<String>();
+			JList<String> info = new JList<String>(infoModel);
+			infoModel.addElement("Junior at");
+			infoModel.addElement("University of Southern California");
+			infoModel.addElement(" ");
+			infoModel.addElement("Major: Computer Science and");
+			infoModel.addElement("Business Administration");
+			infoModel.addElement(" ");
+			infoModel.addElement("Section: Professor Miller's");
+			infoModel.addElement("8:00AM - 9:20AM");
+			infoModel.addElement(" ");
+			infoModel.addElement("Program Completed On");
+			infoModel.addElement("October 3, 2014");
+			infoModel.addElement(" ");
+			infoModel.addElement("http://github.com/yoojinl");
+			info.setAlignmentX(JList.CENTER_ALIGNMENT);
+			info.setAlignmentY(JList.CENTER_ALIGNMENT);
+			info.setEnabled(false);
+			description.setBackground(Color.WHITE);
+			description.add(info);
+		gbc.gridx=0;
+		gbc.gridy=1;
+		aboutPanel.add(description,gbc);
+		aboutPanel.setBackground(Color.WHITE);
+		aboutDialog.add(aboutPanel);
+		aboutDialog.setVisible(true);
 	}
 }

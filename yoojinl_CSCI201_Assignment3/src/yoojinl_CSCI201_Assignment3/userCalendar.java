@@ -32,7 +32,7 @@ public class userCalendar extends JFrame{
 		}
 		
 		setSize(500,500);
-		setLocation(300,100);
+		setLocation(200,100);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBackground(Color.WHITE);
 		
@@ -43,7 +43,7 @@ public class userCalendar extends JFrame{
 		emPanel = new eventManagerPanel(outerPanel, this);
 		cePanel = new createEventPanel(currentCal, outerPanel, this);
 		ePanel = new editDeleteEventPanel(emptyEvent,outerPanel,this);
-		cPanel = new calendarPanel(outerPanel, cePanel, ePanel, this);
+		cPanel = new calendarPanel(outerPanel, cePanel, ePanel, emPanel, this);
 		
 		
 		
@@ -64,8 +64,25 @@ public class userCalendar extends JFrame{
 		int month = eventDate.get(Calendar.MONTH);
 		year = year - 1900;
 		eventList.get(year).get(month).add(eventList.get(year).get(month).size(), newEvent);
-		cPanel.displayEvents(eventDate);
+		cPanel.displayEvents(newDate);
 		cPanel.drawDays();
+	}
+	
+	public void removeEvent(Event deleteEvent)
+	{
+		Calendar eventDate = deleteEvent.getEventDate();
+		int year = eventDate.get(Calendar.YEAR);
+		int month = eventDate.get(Calendar.MONTH);
+		year = year - 1900;
+		int size = eventList.get(year).get(month).size();
+		for(int i=0; i<size; i++){
+			if(eventList.get(year).get(month).get(i).getListString()==deleteEvent.getListString()){
+				eventList.get(year).get(month).remove(i);
+				break;
+			}
+		}
+		cPanel.displayEvents(eventDate);
+
 	}
 
 	public void updateEvent(Event newEvent)
@@ -74,7 +91,8 @@ public class userCalendar extends JFrame{
 		int year = eventDate.get(Calendar.YEAR);
 		int month = eventDate.get(Calendar.MONTH);
 		year = year - 1900;
-		for(int i=0; i<eventList.get(year).get(month).size(); i++){
+		int size = eventList.get(year).get(month).size();
+		for(int i=0; i<size; i++){
 			if(eventList.get(year).get(month).get(i).getListString()==newEvent.getListString())
 			{
 				eventList.get(year).get(month).remove(i);
